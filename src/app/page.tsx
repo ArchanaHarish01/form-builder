@@ -11,15 +11,7 @@ import {
   RotateCcw,
   Settings,
   Trash2,
-  Upload,
-  Type,
-  Mail,
-  Hash,
-  Phone,
-  Calendar,
-  CheckSquare,
-  ChevronDown,
-  AlignLeft
+  Upload
 } from 'lucide-react';
 import { ComponentProps, ComponentTypeKey, FormComponent } from '../types';
 import { COMPONENT_TYPES } from '../constants';
@@ -115,10 +107,11 @@ const FormBuilder: React.FC = () => {
       reader.onload = (e) => {
         try {
           const config = JSON.parse(e.target?.result as string);
-          setFormComponents(config.components || []);
+          setFormComponents(config.components ?? []);
           setSelectedComponent(null);
-        } catch (error) {
-          alert('Invalid JSON file');
+        }
+        catch (error) {
+          console.error('Error parsing JSON:', error);
         }
       };
       reader.readAsText(file);
