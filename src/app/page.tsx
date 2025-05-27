@@ -23,6 +23,7 @@ const FormBuilder: React.FC = () => {
   const [formComponents, setFormComponents] = useState<FormComponent[]>([]);
   const [selectedComponent, setSelectedComponent] = useState<FormComponent | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -128,6 +129,7 @@ const FormBuilder: React.FC = () => {
   };
 
   // Handle form input change in preview mode
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const handleFormDataChange = (componentId: string, value: any) => {
     setFormData(prev => ({ ...prev, [componentId]: value }));
   };
