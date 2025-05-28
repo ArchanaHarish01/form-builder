@@ -1,23 +1,16 @@
 "use client";
 
-import React, { ChangeEvent, useRef, useState } from 'react';
 import {
-  Copy,
-  Download,
-  Eye,
-  EyeOff,
-  FileText,
-  Plus,
-  RotateCcw,
-  Settings,
-  Trash2,
-  Upload
+  Settings
 } from 'lucide-react';
-import { ComponentProps, ComponentTypeKey, FormComponent } from '../types';
+import React, { ChangeEvent, useRef, useState } from 'react';
+import ComponentPalette from '../components/ComponentPalette';
+import FormCanvas from '../components/FormCanvas';
+import PropertiesPanel from '../components/PropertiesPanel';
+import Toolbar from '../components/Toolbar';
 import { COMPONENT_TYPES } from '../constants';
-
-// Component types configuration
-
+import { ComponentProps, ComponentTypeKey, FormComponent } from '../types';
+import { Toggle } from '../components/Toggle';
 
 const FormBuilder: React.FC = () => {
   const [formComponents, setFormComponents] = useState<FormComponent[]>([]);
@@ -307,7 +300,7 @@ const FormBuilder: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center space-x-2 pb-3 border-b">
           <componentType.icon className="w-5 h-5 text-blue-600" />
-          <h3 className="font-semibold text-gray-800">{componentType.name}</h3>
+          <h3 className="font-semibold text-blue-600">{componentType.name}</h3>
         </div>
 
         <div>
@@ -429,177 +422,44 @@ const FormBuilder: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Component Palette */}
-      <div className="w-64 bg-white border-r border-gray-300 p-4">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Components</h2>
-        <div className="space-y-2">
-          {Object.entries(COMPONENT_TYPES).map(([typeKey, component]) => (
-            <div
-              key={typeKey}
-              draggable
-              onDragStart={(e) => handleDragStart(e, typeKey)}
-              className="flex items-center space-x-3 p-3 bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-move hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
-            >
-              <component.icon className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">{component.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 dark:text-white">
+      <Toggle />
+      <ComponentPalette
+        COMPONENT_TYPES={COMPONENT_TYPES}
+        handleDragStart={handleDragStart}
+      />
       {/* Main Form Builder Area */}
       <div className="flex-1 flex flex-col">
         {/* Toolbar */}
-        <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-gray-800">Form Builder</h1>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${isPreviewMode
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                  }`}
-              >
-                {isPreviewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                <span>{isPreviewMode ? 'Edit Mode' : 'Preview'}</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={clearForm}
-              className="flex items-center space-x-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Clear</span>
-            </button>
-
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={importForm}
-              accept=".json"
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
-            >
-              <Upload className="w-4 h-4" />
-              <span>Import</span>
-            </button>
-
-            <button
-              onClick={exportForm}
-              className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-all duration-200"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export</span>
-            </button>
-          </div>
-        </div>
+        <Toolbar
+          isPreviewMode={isPreviewMode}
+          setIsPreviewMode={setIsPreviewMode}
+          clearForm={clearForm}
+          fileInputRef={fileInputRef}
+          importForm={importForm}
+          exportForm={exportForm}
+        />
 
         {/* Form Canvas */}
         <div className="flex-1 p-6 overflow-auto">
-          {isPreviewMode ? (
-            <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Form Preview</h2>
-              {formComponents.length === 0 ? (
-                <div className="text-center text-gray-500 py-12">
-                  <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>No form components to preview</p>
-                </div>
-              ) : (
-                <div onSubmit={(e) => e.preventDefault()}>
-                  {formComponents.map(component => renderFormComponent(component, true))}
-                  <button
-                    type="submit"
-                    className="w-full mt-6 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
-                  >
-                    Submit Form
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 min-h-96"
-            >
-              {formComponents.length === 0 ? (
-                <div className="text-center text-gray-400 py-16">
-                  <Plus className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg mb-2">Drag components here to build your form</p>
-                  <p className="text-sm">Start by dragging a component from the left panel</p>
-                </div>
-              ) : (
-                formComponents.map((component, index) => (
-                  <div
-                    key={component.id}
-                    className={`group relative mb-4 p-2 rounded-lg hover:bg-gray-50 ${selectedComponent?.id === component.id ? 'ring-2 ring-blue-500' : ''
-                      }`}
-                    onClick={() => setSelectedComponent(component)}
-                  >
-                    <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white shadow-lg rounded p-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          moveComponent(index, 'up');
-                        }}
-                        disabled={index === 0}
-                        className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          moveComponent(index, 'down');
-                        }}
-                        disabled={index === formComponents.length - 1}
-                        className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                      >
-                        ↓
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          duplicateComponent(component);
-                        }}
-                        className="p-1 text-gray-400 hover:text-blue-600"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteComponent(component.id);
-                        }}
-                        className="p-1 text-gray-400 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    {renderFormComponent(component)}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+          <FormCanvas
+            isPreviewMode={isPreviewMode}
+            formComponents={formComponents}
+            renderFormComponent={renderFormComponent}
+            selectedComponent={selectedComponent}
+            setSelectedComponent={setSelectedComponent}
+            moveComponent={moveComponent}
+            duplicateComponent={duplicateComponent}
+            deleteComponent={deleteComponent}
+            handleDragOver={handleDragOver}
+            handleDrop={handleDrop}
+          />
         </div>
       </div>
 
       {/* Properties Panel */}
-      {!isPreviewMode && (
-        <div className="w-80 bg-white border-l border-gray-200 p-4">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Properties</h2>
-          {renderPropertiesPanel()}
-        </div>
-      )}
+      {!isPreviewMode && <PropertiesPanel renderPropertiesPanel={renderPropertiesPanel} />}
+
     </div>
   );
 
